@@ -9,7 +9,6 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
-    /* Reserve scrollbar space so layout never shifts */
     html {
       scrollbar-gutter: stable;
       overflow-y: scroll;
@@ -19,101 +18,67 @@
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(8px); }
     }
+
+    .hero-box {
+      /* All animated properties in one place */
+      transition:
+        height 0.55s cubic-bezier(0.65, 0, 0.35, 1),
+        border-radius 0.55s cubic-bezier(0.65, 0, 0.35, 1);
+    }
   </style>
 </head>
 <body class="bg-[#0a0a0a] text-stone-200 font-sans">
   <div id="root"></div>
   <script type="text/babel">
-    const { useEffect, useState, useRef, useCallback } = React;
+    const { useEffect, useState } = React;
 
-    // Smooth eased value hook using RAF lerp
-    function useSmoothScroll() {
-      const [display, setDisplay] = useState(0);
-      const raw = useRef(0);       // actual scroll progress 0–1
-      const current = useRef(0);   // animated value
-      const rafId = useRef(null);
+    // Threshold: collapse when user scrolls past this many px, expand when back above it
+    const COLLAPSE_AT = 80;
 
-      const animate = useCallback(() => {
-        const target = raw.current;
-        const cur = current.current;
-        const diff = target - cur;
-
-        // Snap-back: when scrolling back up and target is near 0, use faster easing
-        const speed = target < cur && target < 0.15 ? 0.12 : 0.09;
-
-        if (Math.abs(diff) < 0.0005) {
-          current.current = target;
-          setDisplay(target);
-          rafId.current = null;
-          return;
-        }
-
-        current.current = cur + diff * speed;
-        setDisplay(current.current);
-        rafId.current = requestAnimationFrame(animate);
-      }, []);
+    function App() {
+      const [collapsed, setCollapsed] = useState(false);
+      const logoUrl = "https://raw.githubusercontent.com/hesCalledAJ/hesCalledAJ/main/logo-rd.png";
 
       useEffect(() => {
         const onScroll = () => {
-          // 720px scroll distance to fully collapse hero
-          raw.current = Math.min(Math.max(window.scrollY / 720, 0), 1);
-          if (!rafId.current) {
-            rafId.current = requestAnimationFrame(animate);
-          }
+          setCollapsed(window.scrollY > COLLAPSE_AT);
         };
-
         window.addEventListener("scroll", onScroll, { passive: true });
-        return () => {
-          window.removeEventListener("scroll", onScroll);
-          if (rafId.current) cancelAnimationFrame(rafId.current);
-        };
-      }, [animate]);
-
-      return display;
-    }
-
-    function App() {
-      const scrollProgress = useSmoothScroll();
-      const logoUrl = "https://raw.githubusercontent.com/hesCalledAJ/hesCalledAJ/main/logo-rd.png";
+        return () => window.removeEventListener("scroll", onScroll);
+      }, []);
 
       const scrollTo = (id) => {
         const element = document.getElementById(id);
         if (element) {
-          const offset = 120;
-          const bodyRect = document.body.getBoundingClientRect().top;
-          const elementRect = element.getBoundingClientRect().top;
-          const elementPosition = elementRect - bodyRect;
-          const offsetPosition = elementPosition - offset;
-          window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+          const top = element.getBoundingClientRect().top + window.scrollY - 120;
+          window.scrollTo({ top, behavior: "smooth" });
         }
       };
 
-      // Hero shrinks from 85vh → 80px
-      const heroHeight = `calc((1 - ${scrollProgress}) * (85vh - 80px) + 80px)`;
-
       return (
         <div className="min-h-screen bg-[#0a0a0a] text-stone-200 font-sans">
-          {/* Sticky Hero Container */}
+          {/* Sticky Hero */}
           <div className="sticky top-0 z-50 max-w-6xl mx-auto px-4 pt-6">
             <div
-              className="relative overflow-hidden flex items-center justify-center bg-gradient-to-br from-[#242424] via-[#121212] to-[#080808] text-white shadow-2xl border border-white/10"
+              className="hero-box relative overflow-hidden flex items-center justify-center bg-gradient-to-br from-[#242424] via-[#121212] to-[#080808] text-white shadow-2xl border border-white/10"
               style={{
-                height: heroHeight,
+                height: collapsed ? "80px" : "85vh",
                 minHeight: "80px",
-                borderRadius: "1.5rem",
-                willChange: "height",
+                borderRadius: collapsed ? "1.25rem" : "1.5rem",
               }}
             >
-              <PatternBackground logoUrl={logoUrl} opacity={Math.max(0.4 - scrollProgress * 4, 0)} scrollProgress={scrollProgress} />
+              {/* Background pattern — fades out when collapsed */}
+              <PatternBackground logoUrl={logoUrl} collapsed={collapsed} />
               <div className="absolute inset-0 bg-black/20 pointer-events-none" />
 
-              {/* === EXPANDED HERO === */}
+              {/* === EXPANDED CONTENT === */}
               <div
                 className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center w-full px-4"
                 style={{
-                  opacity: Math.max(1 - scrollProgress * 1.5, 0),
-                  pointerEvents: scrollProgress < 0.5 ? "auto" : "none",
-                  transform: `translateY(${-scrollProgress * 50}px)`,
+                  opacity: collapsed ? 0 : 1,
+                  transform: collapsed ? "translateY(-24px)" : "translateY(0)",
+                  transition: "opacity 0.3s ease, transform 0.4s ease",
+                  pointerEvents: collapsed ? "none" : "auto",
                 }}
               >
                 <div className="w-40 h-40 rounded-full bg-gradient-to-b from-amber-400 to-amber-700 p-1 shadow-2xl">
@@ -142,27 +107,20 @@
                   <HeroButton onClick={() => scrollTo("contact")}>✉️ Contact</HeroButton>
                 </div>
 
-                <div
-                  className="mt-14 flex flex-col items-center gap-2.5"
-                  style={{ opacity: Math.max(1 - scrollProgress * 3, 0) }}
-                >
+                <div className="mt-14 flex flex-col items-center gap-2.5" style={{ opacity: collapsed ? 0 : 1, transition: "opacity 0.2s" }}>
                   <span className="text-[10px] tracking-[2.5px] uppercase font-medium text-amber-400/70">Scroll to explore</span>
-                  <div
-                    className="text-3xl text-amber-400/60"
-                    style={{ animation: "scrollHintBounce 1.6s ease-in-out infinite" }}
-                  >
-                    ↓
-                  </div>
+                  <div className="text-3xl text-amber-400/60" style={{ animation: "scrollHintBounce 1.6s ease-in-out infinite" }}>↓</div>
                 </div>
               </div>
 
-              {/* === MINIMIZED NAVBAR === */}
+              {/* === COLLAPSED NAVBAR === */}
               <div
                 className="relative z-20 w-full px-6 flex items-center justify-between h-20"
                 style={{
-                  opacity: Math.max((scrollProgress - 0.6) * 4, 0),
-                  pointerEvents: scrollProgress > 0.7 ? "auto" : "none",
-                  transform: `translateY(${(1 - scrollProgress) * 20}px)`,
+                  opacity: collapsed ? 1 : 0,
+                  transform: collapsed ? "translateY(0)" : "translateY(12px)",
+                  transition: "opacity 0.25s ease 0.2s, transform 0.3s ease 0.2s",
+                  pointerEvents: collapsed ? "auto" : "none",
                 }}
               >
                 <div className="flex items-center gap-3">
@@ -187,8 +145,8 @@
             </div>
           </div>
 
-          {/* Spacer — matches the collapsible portion of the hero */}
-          <div style={{ height: "calc(85vh - 80px)" }} aria-hidden="true" />
+          {/* Spacer so content starts below the expanded hero */}
+          <div style={{ height: "calc(85vh - 80px + 1.5rem)" }} aria-hidden="true" />
 
           {/* Page content */}
           <main className="max-w-4xl mx-auto px-6 space-y-32 py-24">
@@ -271,7 +229,6 @@
 
       return (
         <div className="p-8 rounded-[2rem] border border-stone-800 hover:border-amber-500/30 hover:shadow-2xl hover:shadow-amber-500/5 transition-all group bg-[#0f0f0f] flex flex-col h-full">
-          {/* Text content grows to fill */}
           <div className="flex-1">
             <h3 className="text-2xl font-bold text-stone-200 group-hover:text-amber-500 transition-colors">
               {title}
@@ -279,8 +236,7 @@
             <p className="mt-3 text-stone-500 text-lg leading-relaxed">{description}</p>
           </div>
 
-          {/* GitHub button */}
-          <div className="mt-6">
+          <div className="mt-6 flex items-center justify-between">
             <a
               href={githubUrl}
               target="_blank"
@@ -292,14 +248,10 @@
               </svg>
               GitHub
             </a>
-          </div>
-
-          {/* Stars badge — pinned at bottom */}
-          <div className="mt-4">
             <img
               src={`https://img.shields.io/github/stars/${repoName}?style=social`}
               alt="GitHub stars"
-              className="h-5 opacity-70"
+              className="h-5 opacity-60"
             />
           </div>
         </div>
@@ -317,19 +269,15 @@
       );
     }
 
-    function PatternBackground({ logoUrl, opacity, scrollProgress }) {
-      const rows = 14;
-      const cols = 14;
-      const currentScale = Math.max(1 - scrollProgress * 1.1, 0);
-      const hidden = opacity <= 0;
+    function PatternBackground({ logoUrl, collapsed }) {
       return (
         <div
           className="absolute inset-0 pointer-events-none z-0 overflow-hidden"
           style={{
             maskImage: "radial-gradient(circle at 50% 45%, transparent 160px, black 400px)",
             WebkitMaskImage: "radial-gradient(circle at 50% 45%, transparent 160px, black 400px)",
-            opacity,
-            visibility: hidden ? "hidden" : "visible",
+            opacity: collapsed ? 0 : 0.4,
+            transition: "opacity 0.4s ease",
           }}
         >
           <div
@@ -339,20 +287,19 @@
               left: "50%",
               width: "1800px",
               height: "1800px",
-              transform: `translate(-50%, -50%) scale(${currentScale})`,
-              transformOrigin: "center center",
+              transform: "translate(-50%, -50%)",
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-around",
             }}
           >
-            {Array.from({ length: rows }).map((_, rowIndex) => (
+            {Array.from({ length: 14 }).map((_, rowIndex) => (
               <div
                 key={rowIndex}
                 className="flex justify-around w-full"
                 style={{ transform: rowIndex % 2 === 1 ? "translateX(60px)" : "none" }}
               >
-                {Array.from({ length: cols }).map((_, colIndex) => (
+                {Array.from({ length: 14 }).map((_, colIndex) => (
                   <img
                     key={colIndex}
                     src={logoUrl}
