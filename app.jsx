@@ -1,19 +1,22 @@
-import React, { useEffect, useRef, useState } from "react";
-import { motion, useScroll, useTransform, useSpring } from "framer-motion";
+const { useEffect, useRef, useState } = React;
+const {
+  motion,
+  useScroll,
+  useTransform,
+  useSpring
+} = window["framer-motion"];
 
-export default function App() {
+function App() {
   const containerRef = useRef(null);
   const [scrollProgress, setScrollProgress] = useState(0);
 
   const logoUrl =
     "https://raw.githubusercontent.com/hesCalledAJ/hesCalledAJ/main/logo-rd.png";
 
-  // Track scroll within the hero "sticky zone"
   useEffect(() => {
     const handleScroll = () => {
       if (!containerRef.current) return;
       const scrollY = window.scrollY;
-      // Hero collapses over the first 350px of scroll
       const progress = Math.min(Math.max(scrollY / 350, 0), 1);
       setScrollProgress(progress);
     };
@@ -22,107 +25,84 @@ export default function App() {
   }, []);
 
   const scrollTo = (id) => {
-    const element = document.getElementById(id);
-    if (element) {
-      // Offset for sticky header (80px height + 24px margin + buffer)
-      const offset = 120;
-      const bodyRect = document.body.getBoundingClientRect().top;
-      const elementRect = element.getBoundingClientRect().top;
-      const elementPosition = elementRect - bodyRect;
-      const offsetPosition = elementPosition - offset;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: "smooth"
-      });
-    }
+    const el = document.getElementById(id);
+    if (!el) return;
+    const offset = 120;
+    const y = el.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({ top: y, behavior: "smooth" });
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-stone-200 font-sans" ref={containerRef}>
-      {/* Sticky Hero Container */}
+    <div ref={containerRef} className="min-h-screen bg-[#0a0a0a] text-stone-200 font-sans">
+      {/* Sticky Hero */}
       <div className="sticky top-0 z-50 max-w-6xl mx-auto px-4 pt-6">
         <motion.div
-          className="relative overflow-hidden flex items-center justify-center bg-gradient-to-br from-[#242424] via-[#121212] to-[#080808] text-white shadow-2xl transition-all duration-150 ease-out border border-white/10"
+          className="relative overflow-hidden flex items-center justify-center bg-gradient-to-br from-[#242424] via-[#121212] to-[#080808] border border-white/10 shadow-2xl"
           style={{
             height: scrollProgress > 0.9 ? "80px" : `${85 - scrollProgress * 65}vh`,
             minHeight: "80px",
             borderRadius: "1.5rem",
           }}
         >
-          {/* Pattern background - Fades to 0 opacity on scroll */}
-          <PatternBackground 
-            logoUrl={logoUrl} 
-            opacity={Math.max(0.4 - scrollProgress * 0.5, 0)} 
+          <PatternBackground
+            logoUrl={logoUrl}
+            opacity={Math.max(0.4 - scrollProgress * 0.5, 0)}
             scrollProgress={scrollProgress}
           />
 
-          {/* Soft overlay - lightened to show more of the underlying gradient */}
-          <div className="absolute inset-0 bg-black/20 pointer-events-none" />
+          <div className="absolute inset-0 bg-black/20" />
 
-          {/* === EXPANDED STATE (Hero) === */}
+          {/* Expanded */}
           <div
-            className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center w-full px-4"
+            className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center px-4"
             style={{
               opacity: 1 - scrollProgress * 1.5,
               pointerEvents: scrollProgress < 0.5 ? "auto" : "none",
               transform: `translateY(${-scrollProgress * 50}px)`,
             }}
           >
-            <div className="w-40 h-40 rounded-full bg-gradient-to-b from-amber-400 to-amber-700 p-1 shadow-2xl">
-              <div className="w-full h-full rounded-full bg-stone-900 p-1">
-                <img
-                  src="https://avatars.githubusercontent.com/u/112819193"
-                  alt="Profile"
-                  className="w-full h-full rounded-full object-cover"
-                />
-              </div>
+            <div className="w-40 h-40 rounded-full bg-gradient-to-b from-amber-400 to-amber-700 p-1">
+              <img
+                src="https://avatars.githubusercontent.com/u/112819193"
+                className="w-full h-full rounded-full object-cover bg-stone-900 p-1"
+              />
             </div>
 
-            <h1 className="mt-6 text-5xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-stone-50 to-stone-400">
+            <h1 className="mt-6 text-5xl font-bold bg-gradient-to-b from-stone-50 to-stone-400 bg-clip-text text-transparent">
               Ali Jafari
             </h1>
-            <p className="mt-3 opacity-90 max-w-md mx-auto text-lg leading-relaxed text-stone-300">
+
+            <p className="mt-3 text-lg text-stone-300">
               Android & Mobile Developer
-              <br />
-              <span className="text-sm font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1 rounded-full inline-block mt-2 backdrop-blur-md">
-                Clean UI • Solid Logic • Solo-Built
-              </span>
             </p>
 
-            <div className="mt-10 flex flex-wrap justify-center gap-4">
-              <HeroButton onClick={() => scrollTo("about")}>ℹ️ About</HeroButton>
-              <HeroButton onClick={() => scrollTo("projects")}>🧩 Projects</HeroButton>
-              <HeroButton onClick={() => scrollTo("contact")}>✉️ Contact</HeroButton>
+            <div className="mt-10 flex gap-4">
+              <HeroButton onClick={() => scrollTo("about")}>About</HeroButton>
+              <HeroButton onClick={() => scrollTo("projects")}>Projects</HeroButton>
+              <HeroButton onClick={() => scrollTo("contact")}>Contact</HeroButton>
             </div>
           </div>
 
-          {/* === MINIMIZED STATE (Navbar) === */}
+          {/* Navbar */}
           <div
             className="relative z-20 w-full px-6 flex items-center justify-between h-20"
             style={{
               opacity: (scrollProgress - 0.7) * 3.3,
               pointerEvents: scrollProgress > 0.8 ? "auto" : "none",
-              transform: `translateY(${(1 - scrollProgress) * 20}px)`,
             }}
           >
-            {/* Left: Avatar + Identity */}
             <div className="flex items-center gap-3">
-              <div className="rounded-full bg-gradient-to-b from-amber-400 to-amber-600 p-[2px] overflow-hidden flex-shrink-0 shadow-lg w-11 h-11">
-                <img
-                  src="https://avatars.githubusercontent.com/u/112819193"
-                  alt="Profile"
-                  className="w-full h-full object-cover rounded-full"
-                />
-              </div>
-              <div className="leading-tight">
-                <div className="font-bold text-lg tracking-tight text-stone-50">Ali Jafari</div>
-                <div className="text-xs text-amber-500 font-medium">Android Developer</div>
+              <img
+                src="https://avatars.githubusercontent.com/u/112819193"
+                className="w-11 h-11 rounded-full"
+              />
+              <div>
+                <div className="font-bold">Ali Jafari</div>
+                <div className="text-xs text-amber-500">Android Developer</div>
               </div>
             </div>
 
-            {/* Right: Navigation */}
-            <div className="flex items-center gap-2">
+            <div className="flex gap-2">
               <NavButton onClick={() => scrollTo("about")}>About</NavButton>
               <NavButton onClick={() => scrollTo("projects")}>Projects</NavButton>
               <NavButton onClick={() => scrollTo("contact")}>Contact</NavButton>
@@ -131,58 +111,26 @@ export default function App() {
         </motion.div>
       </div>
 
-      {/* Spacer */}
-      <div style={{ height: "450px" }} aria-hidden="true" />
+      <div style={{ height: 450 }} />
 
-      {/* Page content */}
-      <main className="max-w-4xl mx-auto px-6 space-y-32 py-24">
+      <main className="max-w-4xl mx-auto px-6 py-24 space-y-32">
         <Section id="about" title="About">
-          <div className="bg-stone-900/50 border border-stone-800 rounded-3xl p-10 shadow-inner">
-            <p className="text-xl text-stone-300 leading-relaxed font-medium">
-              I am a solo Android developer with 2+ years of Kotlin experience. My passion lies
-              in crafting fluid user experiences and high-performance logic. I don't just write
-              code; I ship products.
-            </p>
-          </div>
+          Solo Android dev. Kotlin. Shipping apps.
         </Section>
-
         <Section id="projects" title="Projects">
-          <div className="grid md:grid-cols-2 gap-8">
-            <ProjectCard
-              title="Raise"
-              description="A sophisticated Material You alarm application for Android. Built with Kotlin and Jetpack Compose, focusing on dynamic theming and seamless user interaction."
-              githubUrl="https://github.com/hesCalledAJ/Raise"
-            />
-            <ProjectCard
-              title="BRIK"
-              description="A minimal focus utility that helps you reclaim your time. It allows you to block your device for a set duration, effectively turning it into a 'brick' to eliminate distractions."
-              githubUrl="https://github.com/hesCalledAJ/BRIK"
-            />
-          </div>
+          Projects here.
         </Section>
-
         <Section id="contact" title="Contact">
-          <div className="flex flex-wrap gap-6">
-            <ContactLink label="Telegram" href="#" />
-            <ContactLink label="GitHub" href="https://github.com/hesCalledAJ" />
-            <ContactLink label="Email" href="mailto:hello@aj.dev" />
-          </div>
+          Links here.
         </Section>
       </main>
-
-      <footer className="py-20 text-center opacity-30 text-sm">
-        © {new Date().getFullYear()} Ali Jafari — Built with React & Tailwind
-      </footer >
-    </div >
+    </div>
   );
 }
 
 function HeroButton({ children, onClick }) {
   return (
-    <button
-      onClick={onClick}
-      className="backdrop-blur-md bg-white/5 border border-white/10 text-stone-200 px-6 py-3 rounded-2xl shadow-lg hover:bg-white/10 hover:text-white hover:border-amber-500/30 transition-all duration-200 text-sm font-semibold"
-    >
+    <button onClick={onClick} className="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20">
       {children}
     </button>
   );
@@ -190,10 +138,7 @@ function HeroButton({ children, onClick }) {
 
 function NavButton({ children, onClick }) {
   return (
-    <button
-      onClick={onClick}
-      className="backdrop-blur-md bg-stone-800/50 border border-stone-700/50 text-stone-300 px-4 py-2 rounded-xl hover:bg-stone-700 hover:text-white transition-all duration-150 text-sm font-semibold"
-    >
+    <button onClick={onClick} className="px-4 py-2 rounded-lg bg-stone-800">
       {children}
     </button>
   );
@@ -201,101 +146,23 @@ function NavButton({ children, onClick }) {
 
 function Section({ id, title, children }) {
   return (
-    <section id={id} className="scroll-mt-32">
-      <h2 className="text-4xl font-extrabold mb-10 flex items-center gap-4 text-stone-50">
-        <span className="w-12 h-1.5 bg-amber-500 rounded-full shadow-[0_0_15px_rgba(245,158,11,0.5)]" />
-        {title}
-      </h2>
-      <div>{children}</div>
+    <section id={id}>
+      <h2 className="text-3xl font-bold mb-6">{title}</h2>
+      {children}
     </section>
   );
 }
 
-function ProjectCard({ title, description, githubUrl }) {
-  return (
-    <div className="p-8 rounded-[2rem] border border-stone-800 hover:border-amber-500/30 hover:shadow-2xl hover:shadow-amber-500/5 transition-all group bg-[#0f0f0f] flex flex-col h-full">
-      <div className="flex-1">
-        <h3 className="text-2xl font-bold text-stone-200 group-hover:text-amber-500 transition-colors">
-          {title}
-        </h3>
-        <p className="mt-3 text-stone-500 text-lg leading-relaxed">{description}</p>
-      </div>
-      <div className="mt-8">
-        <a 
-          href={githubUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-stone-900 border border-stone-800 text-stone-300 hover:bg-amber-500 hover:text-black hover:border-amber-500 transition-all font-bold text-sm"
-        >
-          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
-          </svg>
-          GitHub
-        </a>
-      </div>
-    </div>
-  );
-}
-
-function ContactLink({ label, href }) {
-  return (
-    <a
-      href={href}
-      className="px-8 py-4 rounded-2xl bg-stone-900 border border-stone-800 text-stone-300 hover:bg-amber-500 hover:text-black transition-all font-bold text-lg shadow-sm"
-    >
-      {label}
-    </a>
-  );
-}
-
 function PatternBackground({ logoUrl, opacity, scrollProgress }) {
-  const rows = 14;
-  const cols = 14;
-
-  // Calculate dynamic scale: starts at 1, goes down to 0.7
-  const currentScale = 1 - scrollProgress * 0.3;
-
+  const scale = 1 - scrollProgress * 0.3;
   return (
     <div
-      className="absolute inset-0 pointer-events-none z-0 overflow-hidden"
-      style={{
-        maskImage:
-          "radial-gradient(circle at 50% 45%, transparent 160px, black 400px)",
-        WebkitMaskImage:
-          "radial-gradient(circle at 50% 45%, transparent 160px, black 400px)",
-        opacity,
-        transition: "opacity 0.2s linear",
-      }}
-    >
-      <div 
-        className="absolute top-1/2 left-1/2 w-[1800px] h-[1800px] -translate-x-1/2 -translate-y-1/2 flex flex-col justify-around transition-transform duration-150 ease-out"
-        style={{
-          transform: `translate(-50%, -50%) scale(${currentScale})`,
-        }}
-      >
-        {Array.from({ length: rows }).map((_, rowIndex) => (
-          <div
-            key={rowIndex}
-            className="flex justify-around w-full"
-            style={{
-              transform: rowIndex % 2 === 1 ? "translateX(60px)" : "none",
-            }}
-          >
-            {Array.from({ length: cols }).map((_, colIndex) => (
-              <img
-                key={colIndex}
-                src={logoUrl}
-                alt=""
-                className="w-10 h-10"
-                style={{
-                  transform: "rotate(-45deg)",
-                  filter: "brightness(0.3)",
-                }}
-              />
-            ))}
-          </div>
-        ))}
-      </div>
-    </div>
+      className="absolute inset-0 pointer-events-none"
+      style={{ opacity, transform: `scale(${scale})` }}
+    />
   );
 }
+
+/* React 18 mount */
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
