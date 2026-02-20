@@ -271,6 +271,7 @@
       const rows = 14;
       const cols = 14;
       const currentScale = Math.max(1 - scrollProgress * 1.1, 0);
+      const hidden = opacity <= 0;
 
       return (
         <div
@@ -279,15 +280,21 @@
             maskImage: "radial-gradient(circle at 50% 45%, transparent 160px, black 400px)",
             WebkitMaskImage: "radial-gradient(circle at 50% 45%, transparent 160px, black 400px)",
             opacity,
+            visibility: hidden ? "hidden" : "visible",
           }}
         >
           <div
-            className="absolute top-1/2 left-1/2 flex flex-col justify-around"
             style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
               width: "1800px",
               height: "1800px",
               transform: `translate(-50%, -50%) scale(${currentScale})`,
               transformOrigin: "center center",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-around",
             }}
           >
             {Array.from({ length: rows }).map((_, rowIndex) => (
