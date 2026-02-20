@@ -94,21 +94,21 @@
                 </h1>
                 <p className="mt-3 opacity-90 max-w-md mx-auto text-lg leading-relaxed text-stone-300">
                   Android & Mobile Developer
-                  <br />
-                  <span className="text-sm font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1 rounded-full inline-block mt-2 backdrop-blur-md">
-                    Clean UI • Solid Logic • Solo-Built
-                  </span>
                 </p>
 
                 <div className="mt-10 flex flex-wrap justify-center gap-4">
-                  <HeroButton onClick={() => scrollTo("about")}>ℹ️ About</HeroButton>
-                  <HeroButton onClick={() => scrollTo("projects")}>🧩 Projects</HeroButton>
-                  <HeroButton onClick={() => scrollTo("contact")}>✉️ Contact</HeroButton>
-                </div>
-
-                <div className="mt-14 flex flex-col items-center gap-2.5" style={{ opacity: collapsed ? 0 : 1, transition: "opacity 0.2s" }}>
-                  <span className="text-[10px] tracking-[2.5px] uppercase font-medium text-amber-400/70">Scroll to explore</span>
-                  <div className="text-3xl text-amber-400/60" style={{ animation: "scrollHintBounce 1.6s ease-in-out infinite" }}>↓</div>
+                  <HeroButton onClick={() => scrollTo("about")}>
+                    <svg className="w-5 h-5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    About
+                  </HeroButton>
+                  <HeroButton onClick={() => scrollTo("projects")}>
+                    <svg className="w-5 h-5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
+                    Projects
+                  </HeroButton>
+                  <HeroButton onClick={() => scrollTo("contact")}>
+                    <svg className="w-5 h-5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                    Contact
+                  </HeroButton>
                 </div>
               </div>
 
@@ -193,7 +193,7 @@
       return (
         <button
           onClick={onClick}
-          className="backdrop-blur-md bg-white/5 border border-white/10 text-stone-200 px-6 py-3 rounded-2xl shadow-lg hover:bg-white/10 hover:text-white hover:border-amber-500/30 transition-all duration-200 text-sm font-semibold"
+          className="flex items-center gap-2 backdrop-blur-md bg-white/5 border border-white/10 text-stone-200 px-6 py-3 rounded-2xl shadow-lg hover:bg-white/10 hover:text-white hover:border-amber-500/30 transition-all duration-200 text-sm font-semibold"
         >
           {children}
         </button>
@@ -286,7 +286,10 @@
               left: "50%",
               width: "1800px",
               height: "1800px",
-              transform: "translate(-50%, -50%)",
+              /* Dynamically scale from 1 to 0.5 when collapsed */
+              transform: collapsed ? "translate(-50%, -50%) scale(0.5)" : "translate(-50%, -50%) scale(1)",
+              /* Sync the timing with the hero-box transition */
+              transition: "transform 0.55s cubic-bezier(0.65, 0, 0.35, 1)",
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-around",
@@ -313,7 +316,7 @@
         </div>
       );
     }
-
+    
     const root = ReactDOM.createRoot(document.getElementById("root"));
     root.render(<App />);
   </script>
