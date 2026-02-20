@@ -30,13 +30,21 @@
         "https://raw.githubusercontent.com/hesCalledAJ/hesCalledAJ/main/logo-rd.png";
 
       useEffect(() => {
+        let rafId = null;
         const handleScroll = () => {
-          const scrollY = window.scrollY;
-          const progress = Math.min(Math.max(scrollY / 350, 0), 1);
-          setScrollProgress(progress);
+          if (rafId) return;
+          rafId = requestAnimationFrame(() => {
+            const scrollY = window.scrollY;
+            const progress = Math.min(Math.max(scrollY / 350, 0), 1);
+            setScrollProgress(progress);
+            rafId = null;
+          });
         };
         window.addEventListener("scroll", handleScroll, { passive: true });
-        return () => window.removeEventListener("scroll", handleScroll);
+        return () => {
+          window.removeEventListener("scroll", handleScroll);
+          if (rafId) cancelAnimationFrame(rafId);
+        };
       }, []);
 
       const scrollTo = (id) => {
