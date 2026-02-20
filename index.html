@@ -57,7 +57,7 @@
       return (
         <div className="min-h-screen bg-[#0a0a0a] text-stone-200 font-sans">
           {/* Sticky Hero */}
-          <div className="sticky top-0 z-50 max-w-6xl mx-auto px-4 pt-6">
+          <div className="fixed top-0 left-0 right-0 z-50 max-w-6xl mx-auto px-4 pt-6">
             <div
               className="hero-box relative overflow-hidden flex items-center justify-center bg-gradient-to-br from-[#242424] via-[#121212] to-[#080808] text-white shadow-2xl border border-white/10"
               style={{
@@ -144,8 +144,8 @@
             </div>
           </div>
 
-          {/* Spacer so content starts below the expanded hero */}
-          <div style={{ height: "calc(85vh - 80px + 1.5rem)" }} aria-hidden="true" />
+          {/* Fixed spacer that permanently holds the expanded hero's space */}
+          <div style={{ height: "calc(85vh + 1.5rem)" }} aria-hidden="true" />
 
           {/* Page content */}
           <main className="max-w-4xl mx-auto px-6 space-y-32 py-24">
