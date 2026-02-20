@@ -9,30 +9,27 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
-    @keyframes scrollHintPulse {
-      0%, 100% { opacity: 0.2; transform: scaleY(0.8); }
-      50% { opacity: 1; transform: scaleY(1); }
+    @keyframes scrollHintBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(8px); }
     }
   </style>
 </head>
 <body class="bg-[#0a0a0a] text-stone-200 font-sans">
   <div id="root"></div>
   <script type="text/babel">
-    const { useEffect, useRef, useState } = React;
+    const { useEffect, useState } = React;
+
     function App() {
-      const containerRef = useRef(null);
       const [scrollProgress, setScrollProgress] = useState(0);
-      const logoUrl =
-        "https://raw.githubusercontent.com/hesCalledAJ/hesCalledAJ/main/logo-rd.png";
-      
+      const logoUrl = "https://raw.githubusercontent.com/hesCalledAJ/hesCalledAJ/main/logo-rd.png";
+
       useEffect(() => {
         let rafId = null;
         const handleScroll = () => {
           if (rafId) return;
           rafId = requestAnimationFrame(() => {
-            const scrollY = window.scrollY;
-            // SLOWER & SMOOTHER collapse (was /350 → now /720)
-            const progress = Math.min(Math.max(scrollY / 720, 0), 1);
+            const progress = Math.min(Math.max(window.scrollY / 720, 0), 1);
             setScrollProgress(progress);
             rafId = null;
           });
@@ -57,23 +54,23 @@
       };
 
       return (
-        <div className="min-h-screen bg-[#0a0a0a] text-stone-200 font-sans" ref={containerRef}>
+        <div className="min-h-screen bg-[#0a0a0a] text-stone-200 font-sans">
           {/* Sticky Hero Container */}
           <div className="sticky top-0 z-50 max-w-6xl mx-auto px-4 pt-6">
             <div
               className="relative overflow-hidden flex items-center justify-center bg-gradient-to-br from-[#242424] via-[#121212] to-[#080808] text-white shadow-2xl border border-white/10"
               style={{
-                height: scrollProgress > 0.9 ? "80px" : `${85 - scrollProgress * 65}vh`,
+                height: `max(${85 - scrollProgress * 65}vh, 80px)`,
                 minHeight: "80px",
                 borderRadius: "1.5rem",
                 willChange: "height",
-                transition: "height 0.1s cubic-bezier(0.25, 0.1, 0.25, 1)", // smooth in Chrome
+                transition: "height 0.12s cubic-bezier(0.25, 0.1, 0.25, 1)",
               }}
             >
               <PatternBackground logoUrl={logoUrl} opacity={Math.max(0.4 - scrollProgress * 4, 0)} scrollProgress={scrollProgress} />
               <div className="absolute inset-0 bg-black/20 pointer-events-none" />
-              
-              {/* === EXPANDED STATE (Hero) === */}
+
+              {/* === EXPANDED HERO === */}
               <div
                 className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center w-full px-4"
                 style={{
@@ -101,28 +98,29 @@
                     Clean UI • Solid Logic • Solo-Built
                   </span>
                 </p>
+
                 <div className="mt-10 flex flex-wrap justify-center gap-4">
                   <HeroButton onClick={() => scrollTo("about")}>ℹ️ About</HeroButton>
                   <HeroButton onClick={() => scrollTo("projects")}>🧩 Projects</HeroButton>
                   <HeroButton onClick={() => scrollTo("contact")}>✉️ Contact</HeroButton>
                 </div>
+
+                {/* === BRAND NEW SCROLL HINT - Under Expanded Hero === */}
+                <div
+                  className="mt-14 flex flex-col items-center gap-2.5"
+                  style={{ opacity: Math.max(1 - scrollProgress * 3, 0) }}
+                >
+                  <span className="text-[10px] tracking-[2.5px] uppercase font-medium text-amber-400/70">Scroll to explore</span>
+                  <div 
+                    className="text-3xl text-amber-400/60"
+                    style={{ animation: "scrollHintBounce 1.6s ease-in-out infinite" }}
+                  >
+                    ↓
+                  </div>
+                </div>
               </div>
 
-              {/* Scroll hint */}
-              <div
-                className="absolute bottom-8 left-0 right-0 z-10 flex flex-col items-center gap-2"
-                style={{ opacity: Math.max(1 - scrollProgress * 8, 0), pointerEvents: "none" }}
-              >
-                <span className="text-xs text-stone-500 tracking-widest uppercase">Scroll</span>
-                <div style={{
-                  width: "1px",
-                  height: "40px",
-                  background: "linear-gradient(to bottom, rgba(245,158,11,0.6), transparent)",
-                  animation: "scrollHintPulse 1.8s ease-in-out infinite"
-                }} />
-              </div>
-
-              {/* === MINIMIZED STATE (Navbar) === */}
+              {/* === MINIMIZED NAVBAR === */}
               <div
                 className="relative z-20 w-full px-6 flex items-center justify-between h-20"
                 style={{
@@ -153,7 +151,7 @@
             </div>
           </div>
 
-          {/* FIXED SPACER - NO MORE JUMPING */}
+          {/* Spacer */}
           <div style={{ height: "calc(85vh - 80px)" }} aria-hidden="true" />
 
           {/* Page content */}
@@ -166,7 +164,7 @@
                 </p>
               </div>
             </Section>
-            
+
             <Section id="projects" title="Projects">
               <div className="grid md:grid-cols-2 gap-8">
                 <ProjectCard
