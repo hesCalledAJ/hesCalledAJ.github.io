@@ -53,6 +53,9 @@
         }
       };
 
+      // Smooth height: starts at 85vh → ends exactly at 80px (original minimized height)
+      const heroHeight = `calc((1 - ${scrollProgress}) * 85vh + ${scrollProgress} * 80px)`;
+
       return (
         <div className="min-h-screen bg-[#0a0a0a] text-stone-200 font-sans">
           {/* Sticky Hero Container */}
@@ -60,7 +63,7 @@
             <div
               className="relative overflow-hidden flex items-center justify-center bg-gradient-to-br from-[#242424] via-[#121212] to-[#080808] text-white shadow-2xl border border-white/10"
               style={{
-                height: `max(${85 - scrollProgress * 65}vh, 80px)`,
+                height: heroHeight,
                 minHeight: "80px",
                 borderRadius: "1.5rem",
                 willChange: "height",
@@ -105,7 +108,7 @@
                   <HeroButton onClick={() => scrollTo("contact")}>✉️ Contact</HeroButton>
                 </div>
 
-                {/* === BRAND NEW SCROLL HINT - Under Expanded Hero === */}
+                {/* BRAND NEW SCROLL HINT - Under Expanded Hero */}
                 <div
                   className="mt-14 flex flex-col items-center gap-2.5"
                   style={{ opacity: Math.max(1 - scrollProgress * 3, 0) }}
@@ -120,7 +123,7 @@
                 </div>
               </div>
 
-              {/* === MINIMIZED NAVBAR === */}
+              {/* === MINIMIZED NAVBAR (exactly 80px like original) === */}
               <div
                 className="relative z-20 w-full px-6 flex items-center justify-between h-20"
                 style={{
