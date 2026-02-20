@@ -3,11 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AJ Portfo</title>
+  <title>Ali Jafari Portfolio</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    @keyframes scrollHintPulse {
+      0%, 100% { opacity: 0.2; transform: scaleY(0.8); }
+      50% { opacity: 1; transform: scaleY(1); }
+    }
+  </style>
 </head>
 
 <body class="bg-[#0a0a0a] text-stone-200 font-sans">
@@ -58,7 +64,7 @@
                 borderRadius: "1.5rem",
               }}
             >
-              <PatternBackground logoUrl={logoUrl} opacity={Math.max(0.4 - scrollProgress * 0.5, 0)} scrollProgress={scrollProgress} />
+              <PatternBackground logoUrl={logoUrl} opacity={Math.max(0.4 - scrollProgress * 4, 0)} scrollProgress={scrollProgress} />
 
               <div className="absolute inset-0 bg-black/20 pointer-events-none" />
 
@@ -97,6 +103,20 @@
                   <HeroButton onClick={() => scrollTo("projects")}>🧩 Projects</HeroButton>
                   <HeroButton onClick={() => scrollTo("contact")}>✉️ Contact</HeroButton>
                 </div>
+              </div>
+
+              {/* Scroll hint */}
+              <div
+                className="absolute bottom-8 left-0 right-0 z-10 flex flex-col items-center gap-2"
+                style={{ opacity: Math.max(1 - scrollProgress * 8, 0), pointerEvents: "none" }}
+              >
+                <span className="text-xs text-stone-500 tracking-widest uppercase">Scroll</span>
+                <div style={{
+                  width: "1px",
+                  height: "40px",
+                  background: "linear-gradient(to bottom, rgba(245,158,11,0.6), transparent)",
+                  animation: "scrollHintPulse 1.8s ease-in-out infinite"
+                }} />
               </div>
 
               {/* === MINIMIZED STATE (Navbar) === */}
