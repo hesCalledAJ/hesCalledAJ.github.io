@@ -1,5 +1,5 @@
 const { useEffect, useRef, useState } = React;
-const { motion, useScroll, useTransform, useSpring } = window.framerMotion;
+const { motion, useScroll, useTransform, useSpring } = window.Motion;
 
 function App() {
   const containerRef = useRef(null);
